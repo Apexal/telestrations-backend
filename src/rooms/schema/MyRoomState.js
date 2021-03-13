@@ -1,9 +1,9 @@
-const schema = require('@colyseus/schema');
+const schema = require('@colyseus/schema')
 
 class MyRoomState extends schema.Schema {}
 
 schema.defineTypes(MyRoomState, {
-  mySynchronizedProperty: "string",
-});
+  mySynchronizedProperty: 'string'
+})
 
-exports.MyRoomState = MyRoomState;
+exports.MyRoomState = MyRoomState

@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node src/index.js",
     "loadtest": "colyseus-loadtest loadtest/example.js --room my_room --numClients 2",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "standard",
+    "fix": "standard --fix"
   },
   "author": "",
   "license": "UNLICENSED",
@@ -16,7 +17,8 @@
   },
   "homepage": "https://github.com/Apexal/telestrations-backend#readme",
   "devDependencies": {
-    "@colyseus/loadtest": "^0.14.0"
+    "@colyseus/loadtest": "^0.14.0",
+    "standard": "^16.0.3"
   },
   "dependencies": {
     "@colyseus/monitor": "^0.14.0",

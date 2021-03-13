@@ -1,17 +1,15 @@
-const colyseus = require('colyseus');
-const MyRoomState = require('./schema/MyRoomState').MyRoomState;
+const colyseus = require('colyseus')
+const MyRoomState = require('./schema/MyRoomState').MyRoomState
 
 exports.MyRoom = class extends colyseus.Room {
-
   onCreate (options) {
-    this.setState(new MyRoomState());
+    this.setState(new MyRoomState())
 
-    this.onMessage("type", (client, message) => {
+    this.onMessage('type', (client, message) => {
       //
       // handle "type" message.
       //
-    });
-
+    })
   }
 
   onJoin (client, options) {
@@ -20,7 +18,6 @@ exports.MyRoom = class extends colyseus.Room {
   onLeave (client, consented) {
   }
 
-  onDispose() {
+  onDispose () {
   }
-
 }
