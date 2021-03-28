@@ -1,11 +1,19 @@
 const schema = require('@colyseus/schema')
-const ArraySchema = schema.ArraySchema
+const MapSchema = schema.MapSchema
 const PlayerState = require('./PlayerState')
 
 class GameRoomState extends schema.Schema {
   constructor () {
     super()
-    this.players = new ArraySchema()
+    this.players = new MapSchema()
+
+    // TODO: gen room code
+
+    // Default to public rooms
+    this.isPublic = true
+
+    // Default round to 0 (waiting for players to join and start)
+    this.roundIndex = 0
   }
 }
 
@@ -16,7 +24,7 @@ schema.defineTypes(GameRoomState, {
    * next person after the last,
    * you go back to the first person.
    **/
-  players: [PlayerState],
+  players: { map: PlayerState },
   /**
    * The room's invite code that players can join with.
    */
