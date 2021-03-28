@@ -1,7 +1,7 @@
 const colyseus = require('colyseus')
-const MyRoomState = require('./schema/MyRoomState').MyRoomState
+const MyRoomState = require('./schema/GameRoomState').MyRoomState
 
-exports.MyRoom = class extends colyseus.Room {
+exports.GameRoom = class extends colyseus.Room {
   onCreate (options) {
     this.setState(new MyRoomState())
 
