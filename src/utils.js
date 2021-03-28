@@ -3,6 +3,7 @@
  */
 
 const dictionary = require('../dictionary.json')
+const config = require('./config')
 
 /**
  * Choose random secret word(s) to assign to players.
@@ -24,4 +25,24 @@ module.exports.chooseNewRandomSecrets = function chooseNewRandomSecrets (count) 
   }
 
   return Array.from(selected)
+}
+
+/**
+ * Given a desired display name, sanitize it by trimming white space and removing banned characters/words.
+ * If too short, too long, or other issue, return false.
+ * @param {string} displayName 
+ * @returns {boolean | string} `false` if invalid name, sanitized string otherwise
+ */
+module.exports.validatePlayerDisplayName = function cleanOrRejectPlayerDisplayName (displayName) {
+  // First attempt to sanitize
+  displayName = displayName
+    .trim() // Remove whitespace at start and end
+    .replace(/\s+/g, ' ') // Replace extra spaces with one space
+
+  // Check if valid
+  if (displayName.length < config.displayNames.minLength || displayName.length > config.displayNames.maxLength) {
+    return false
+  }
+
+  return displayName
 }
