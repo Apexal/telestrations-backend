@@ -7,8 +7,6 @@ class GameRoomState extends schema.Schema {
     super()
     this.players = new MapSchema()
 
-    // TODO: gen room code
-
     // Default to public rooms
     this.isPublic = true
 
@@ -25,6 +23,12 @@ schema.defineTypes(GameRoomState, {
    * you go back to the first person.
    **/
   players: { map: PlayerState },
+  /**
+   * The client ID of the host player who started
+   * the game room. If they disconnect, this should
+   * be reassigned to another client ID.
+   */
+  hostPlayerClientId: 'string',
   /**
    * The room's invite code that players can join with.
    */
