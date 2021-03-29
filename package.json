@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/index.js",
-    "loadtest": "colyseus-loadtest loadtest/example.js --room my_room --numClients 2",
+    "loadtest": "colyseus-loadtest loadtest/example.js --room game_room --numClients 1",
     "test": "standard",
     "fix": "standard --fix"
   },
@@ -23,7 +23,7 @@
   "dependencies": {
     "@colyseus/monitor": "^0.14.0",
     "@colyseus/social": "^0.10.9",
-    "colyseus": "^0.14.0",
+    "colyseus": "^0.14.12",
     "cors": "^2.8.5",
     "express": "^4.16.4",
     "express-jwt": "^5.3.1"
