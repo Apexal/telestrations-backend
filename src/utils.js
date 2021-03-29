@@ -30,7 +30,7 @@ module.exports.chooseNewRandomSecrets = function chooseNewRandomSecrets (count) 
 /**
  * Given a desired display name, sanitize it by trimming white space and removing banned characters/words.
  * If too short, too long, or other issue, return false.
- * @param {string} displayName 
+ * @param {string} displayName
  * @returns {boolean | string} `false` if invalid name, sanitized string otherwise
  */
 module.exports.validatePlayerDisplayName = function cleanOrRejectPlayerDisplayName (displayName) {

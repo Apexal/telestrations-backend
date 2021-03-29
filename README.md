@@ -1,10 +1,10 @@
-# Welcome to Colyseus!
-
-This project has been created using [⚔️ `create-colyseus-app`](https://github.com/colyseus/create-colyseus-app/) - an npm init template for kick starting a Colyseus project in TypeScript.
+# Telestrations Backend
 
 [Documentation](http://docs.colyseus.io/)
 
-## :crossed_swords: Usage
+This is the backend server for the Telestrations web game. It uses the Colyseus framework on a NodeJS server.
+
+## Usage
 
 ```
 npm start
@@ -13,8 +13,8 @@ npm start
 ## Structure
 
 - `index.js`: main entry point, register an empty room handler and attach [`@colyseus/monitor`](https://github.com/colyseus/colyseus-monitor)
-- `src/rooms/MyRoom.js`: an empty room handler for you to implement your logic
-- `src/rooms/schema/MyRoomState.js`: an empty schema used on your room's state.
+- `src/rooms/MyRoom.js`: game room handler for you to implement your logic
+- `src/rooms/schema/*.js`: schemas used in your room's state
 - `loadtest/example.js`: scriptable client for the loadtest tool (see `npm run loadtest`)
 - `package.json`:
     - `scripts`:

@@ -1,7 +1,12 @@
 const schema = require('@colyseus/schema')
-const { DrawingState } = require('./DrawingState')
 
-class PlayerState extends schema.Schema {}
+class PlayerState extends schema.Schema {
+  constructor () {
+    super()
+    this.displayName = 'Unnamed Player'
+    this.secretWord = ''
+  }
+}
 
 schema.defineTypes(PlayerState, {
   /**
@@ -11,8 +16,7 @@ schema.defineTypes(PlayerState, {
   /**
    * The randomly selected secret word assigned to this user.
    */
-  secretWord: 'string',
-  drawingChain: [DrawingState]
+  secretWord: 'string'
 })
 
 exports.PlayerState = PlayerState

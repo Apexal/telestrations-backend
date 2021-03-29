@@ -1,4 +1,5 @@
 const colyseus = require('colyseus')
+const config = require('../config')
 const { validatePlayerDisplayName } = require('../utils')
 const { GameRoomState } = require('./schema/GameRoomState')
 const { PlayerState } = require('./schema/PlayerState')
@@ -6,6 +7,8 @@ const { PlayerState } = require('./schema/PlayerState')
 exports.GameRoom = class extends colyseus.Room {
   onCreate (options) {
     this.setState(new GameRoomState())
+
+    this.maxClients = config.maxClients
 
     /**
      * Event handler for the `player_set_displayName` event.
@@ -17,7 +20,10 @@ exports.GameRoom = class extends colyseus.Room {
       if (!result) return // Ignore requests to set displayName to something invalid
 
       const player = this.state.players.get(client.id)
-      player.displayName = displayName
+      const oldDisplayName = player.displayName
+      player.displayName = result
+
+      console.log(`[Room ${this.roomId}] Client`, client.id, 'changed display name from', oldDisplayName, 'to', displayName)
     })
   }
 
@@ -28,10 +34,13 @@ exports.GameRoom = class extends colyseus.Room {
    * @param {*} options
    */
   onJoin (client, options) {
-    this.state.players.set(client.id, new PlayerState())
+    this.state.players.set(client.sessionId, new PlayerState())
   }
 
   onLeave (client, consented) {
+    if (this.state.players.has(client.sessionId)) {
+      this.state.players.delete(client.sessionId)
+    }
   }
 
   onDispose () {

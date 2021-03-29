@@ -2,8 +2,8 @@ const http = require('http')
 const express = require('express')
 const cors = require('cors')
 const colyseus = require('colyseus')
+const { LobbyRoom } = colyseus
 const monitor = require('@colyseus/monitor').monitor
-// const socialRoutes = require("@colyseus/social/express").default;
 
 const { GameRoom } = require('./rooms/GameRoom')
 
@@ -19,15 +19,10 @@ const gameServer = new colyseus.Server({
 })
 
 // register your room handlers
-gameServer.define('game_room', GameRoom)
-
-/**
- * Register @colyseus/social routes
- *
- * - uncomment if you want to use default authentication (https://docs.colyseus.io/server/authentication/)
- * - also uncomment the require statement
- */
-// app.use("/", socialRoutes);
+gameServer.define('lobby', LobbyRoom)
+gameServer
+  .define('game_room', GameRoom)
+  .enableRealtimeListing()
 
 // register colyseus monitor AFTER registering your room handlers
 app.use('/colyseus', monitor())

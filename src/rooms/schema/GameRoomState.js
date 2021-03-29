@@ -1,6 +1,6 @@
 const schema = require('@colyseus/schema')
 const MapSchema = schema.MapSchema
-const PlayerState = require('./PlayerState')
+const { PlayerState } = require('./PlayerState')
 
 class GameRoomState extends schema.Schema {
   constructor () {
@@ -38,7 +38,7 @@ schema.defineTypes(GameRoomState, {
    * The round the game is in. 0 means the game has not started and is waiting for players.
    * 1 is the first round. The last round is determined by the number of players.
    */
-  roundIndex: 'int8'
+  roundIndex: 'uint8'
 })
 
 exports.GameRoomState = GameRoomState
