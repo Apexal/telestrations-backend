@@ -1,6 +1,6 @@
 const schema = require('@colyseus/schema')
 const MapSchema = schema.MapSchema
-const PlayerState = require('./PlayerState')
+const { PlayerState } = require('./PlayerState')
 
 class GameRoomState extends schema.Schema {
   constructor () {

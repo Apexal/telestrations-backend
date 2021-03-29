@@ -20,7 +20,10 @@ exports.GameRoom = class extends colyseus.Room {
       if (!result) return // Ignore requests to set displayName to something invalid
 
       const player = this.state.players.get(client.id)
-      player.displayName = displayName
+      const oldDisplayName = player.displayName
+      player.displayName = result
+
+      console.log(`[Room ${this.roomId}] Client`, client.id, 'changed display name from', oldDisplayName, 'to', displayName)
     })
   }
 

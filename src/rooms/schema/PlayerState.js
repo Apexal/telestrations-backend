@@ -4,7 +4,7 @@ class PlayerState extends schema.Schema {
   constructor () {
     super()
     this.displayName = 'Unnamed Player'
-    this.secretWord = 'yeet'
+    this.secretWord = ''
   }
 }
 
