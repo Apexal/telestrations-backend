@@ -36,6 +36,7 @@ exports.GameRoom = class extends colyseus.Room {
    */
   onJoin (client, options) {
     this.state.players.set(client.sessionId, new PlayerState())
+    console.log(`[Room ${this.roomId}] Client`, client.id, 'joined')
   }
 
   onLeave (client, consented) {
@@ -43,6 +44,7 @@ exports.GameRoom = class extends colyseus.Room {
     if (this.state.players.has(client.sessionId)) {
       this.state.players.delete(client.sessionId)
     }
+    console.log(`[Room ${this.roomId}] Client`, client.id, 'left')
   }
 
   onDispose () {
