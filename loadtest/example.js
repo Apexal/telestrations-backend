@@ -8,6 +8,12 @@ exports.onJoin = function () {
   this.onMessage('*', (type, message) => {
     console.log(this.sessionId, 'received:', type, message)
   })
+
+  setTimeout(() => {
+    this.send('player_set_displayName', {
+      displayName: 'Bob'
+    })
+  }, 2000)
 }
 
 exports.onLeave = function () {
