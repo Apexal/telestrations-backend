@@ -1,6 +1,6 @@
 const colyseus = require('colyseus')
 const config = require('../config')
-const { validatePlayerDisplayName } = require('../utils')
+const { validatePlayerDisplayName, generateRoomId } = require('../utils')
 const { GameRoomState } = require('./schema/GameRoomState')
 const { PlayerState } = require('./schema/PlayerState')
 
@@ -8,6 +8,7 @@ exports.GameRoom = class extends colyseus.Room {
   onCreate (options) {
     this.setState(new GameRoomState())
 
+    this.roomId = generateRoomId()
     this.maxClients = config.maxClients
 
     /**
@@ -38,6 +39,7 @@ exports.GameRoom = class extends colyseus.Room {
   }
 
   onLeave (client, consented) {
+    // TODO: implement reconnect waiting
     if (this.state.players.has(client.sessionId)) {
       this.state.players.delete(client.sessionId)
     }

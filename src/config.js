@@ -3,5 +3,6 @@ module.exports = {
     minLength: 3,
     maxLength: 20
   },
+  roomIdLength: 5,
   maxClients: 8
 }
