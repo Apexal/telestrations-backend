@@ -2,6 +2,9 @@ const schema = require('@colyseus/schema')
 const MapSchema = schema.MapSchema
 const { PlayerState } = require('./PlayerState')
 
+/**
+ * Represents the overarching state of a single game room.
+ */
 class GameRoomState extends schema.Schema {
   constructor () {
     super()
