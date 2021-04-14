@@ -12,13 +12,18 @@ const config = require('./config')
  * TODO: unit test this!
  *
  * @param count The number of secret words to grab
+ * @returns {string[]} `count` number of secret words in an array
  */
-module.exports.chooseNewRandomSecrets = function chooseNewRandomSecrets (count) {
+module.exports.chooseRandomSecretWords = function chooseRandomSecretWords (count) {
   const selected = new Set()
+
+  if (count > dictionary.length) {
+    throw Error('You requested too many secret words!')
+  }
 
   for (let i = 0; i < count; i++) {
     let word = dictionary[Math.floor(Math.random() * dictionary.length)]
-    while (!selected.has(word)) {
+    while (selected.has(word)) {
       word = dictionary[Math.floor(Math.random() * dictionary.length)]
     }
     selected.add(word)
