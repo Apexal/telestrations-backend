@@ -33,10 +33,6 @@ schema.defineTypes(GameRoomState, {
    */
   hostPlayerClientId: 'string',
   /**
-   * The room's invite code that players can join with.
-   */
-  roomCode: 'string',
-  /**
    * Should the room be publicly listed on the homepage?
    * If false, players can only join by entering the room code.
    */

@@ -37,8 +37,17 @@ exports.GameRoom = class extends colyseus.Room {
   onJoin (client, options) {
     this.state.players.set(client.sessionId, new PlayerState())
     console.log(`[Room ${this.roomId}] Client`, client.id, 'joined')
+
+    // Set player as host if no host yet (player who created game becomes host)
+    if (!this.state.hostPlayerClientId) this.state.hostPlayerClientId = client.id
   }
 
+  /**
+   * Called when a client leaves the room, either intentionally or not.
+   *
+   * @param {colyseus.Client} client The client that disconnected
+   * @param {boolean} consented Whether the disconnect was intentional
+   */
   onLeave (client, consented) {
     // TODO: implement reconnect waiting
     if (this.state.players.has(client.sessionId)) {
@@ -48,5 +57,6 @@ exports.GameRoom = class extends colyseus.Room {
   }
 
   onDispose () {
+    console.log(`[Room ${this.roomId}] Room empty, destroyed`)
   }
 }
