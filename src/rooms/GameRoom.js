@@ -1,6 +1,6 @@
 const colyseus = require('colyseus')
 const config = require('../config')
-const { validatePlayerDisplayName, generateRoomId } = require('../utils')
+const { validatePlayerDisplayName, generateRoomId, chooseRandomSecretWords } = require('../utils')
 const { GameRoomState } = require('./schema/GameRoomState')
 const { PlayerState } = require('./schema/PlayerState')
 
@@ -26,6 +26,26 @@ exports.GameRoom = class extends colyseus.Room {
 
       console.log(`[Room ${this.roomId}] Client`, client.id, 'changed display name from', oldDisplayName, 'to', displayName)
     })
+
+    this.onMessage('start_game', (client) => {
+      // Check if client is host
+      if (client.id !== this.state.hostPlayerClientId) return
+
+      // Check if min number of players
+      if (this.state.players.size < config.minClients) return
+
+      console.log(`[Room ${this.roomId}] Host client ${client.id} wants to start game`)
+
+      // Assign secret words
+      const playerKeys = Array.from(this.state.players.keys())
+      const secretWords = chooseRandomSecretWords(this.state.players.size)
+      secretWords.forEach((secretWord, index) => {
+        const player = this.state.players.get(playerKeys[index])
+
+        player.secretWord = secretWord
+        console.log(`[Room ${this.roomId}] Client`, playerKeys[index], `(${player.displayName})`, 'received secret word', "'" + secretWord + "'")
+      })
+    })
   }
 
   /**
@@ -49,7 +69,7 @@ exports.GameRoom = class extends colyseus.Room {
    * @param {boolean} consented Whether the disconnect was intentional
    */
   onLeave (client, consented) {
-    // TODO: implement reconnect waiting
+    // TODO: implement reconnect waiting only if not consented
     if (this.state.players.has(client.sessionId)) {
       this.state.players.delete(client.sessionId)
     }
