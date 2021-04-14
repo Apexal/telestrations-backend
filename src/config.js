@@ -4,5 +4,5 @@ module.exports = {
     maxLength: 20
   },
   roomIdLength: 5,
-  maxClients: 8
+  maxClients: 12
 }
