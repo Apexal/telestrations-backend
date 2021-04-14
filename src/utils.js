@@ -37,6 +37,8 @@ module.exports.chooseNewRandomSecrets = function chooseNewRandomSecrets (count) 
  * @returns {boolean | string} `false` if invalid name, sanitized string otherwise
  */
 module.exports.validatePlayerDisplayName = function cleanOrRejectPlayerDisplayName (displayName) {
+  if (!displayName) return false
+
   // First attempt to sanitize
   displayName = displayName
     .trim() // Remove whitespace at start and end
