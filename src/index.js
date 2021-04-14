@@ -27,5 +27,5 @@ gameServer
 // register colyseus monitor AFTER registering your room handlers
 app.use('/colyseus', monitor())
 
-gameServer.listen(port)
+gameServer.listen(port, '0.0.0.0')
 console.log(`Listening on ws://localhost:${port}`)
