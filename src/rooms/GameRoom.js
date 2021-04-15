@@ -62,6 +62,8 @@ exports.GameRoom = class extends colyseus.Room {
     if (!this.state.hostPlayerClientId) this.state.hostPlayerClientId = client.id
   }
 
+  // test comment
+
   /**
    * Called when a client leaves the room, either intentionally or not.
    *
