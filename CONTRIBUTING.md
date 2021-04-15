@@ -1,7 +1,7 @@
 # Contributing Guide
 
 ### First Time Setup
-Make sure you have cloned the repository to your computer. You can do this either through the terminal with `git clone https://github.com/MITR-Team-1/dfhs-fundraising.git` or through a tool like GitHub Desktop.
+Make sure you have cloned the repository to your computer. You can do this either through the terminal with `git clone https://github.com/Apexal/telestrations-backend.git` or through a tool like GitHub Desktop.
 
 Make sure you have NodeJS installed. You can test this by running `node -v` in a terminal. You should have a version 12 or higher.
 
