@@ -34,4 +34,15 @@ Make sure you have NodeJS installed. You can test this by running `node -v` in a
     - `git checkout main`
     - `git pull origin main`
 
+### Running It
+You'll probably want to be running the server as you code! Here are the steps:
+1. Start server
+    - `npm start`
+2. Open Colyseus console
+    - `http://localhost:2567/colyseus`
+3. Run the frontend server in the `telestrations` folder
+    - Look at the README in that file for instructions, should just be `npm start` though
+
+---
+
 Ask the team for assistance with any of these steps.
