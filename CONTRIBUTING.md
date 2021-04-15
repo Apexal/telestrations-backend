@@ -6,6 +6,7 @@ Make sure you have cloned the repository to your computer. You can do this eithe
 Make sure you have NodeJS installed. You can test this by running `node -v` in a terminal. You should have a version 12 or higher.
 
 ### Contribution Cycle
+> Note that all the git commands you see here can be done through GitHub Desktop or similar!
 1. Make sure you are on the `main` branch
     - `git checkout main`
 2. Pull any changes from GitHub to the main branch
