@@ -10,6 +10,7 @@ class PlayerState extends schema.Schema {
     super()
     this.displayName = generatePlayerName()
     this.secretWord = ''
+    this.submissions = new schema.ArraySchema()
   }
 }
 
