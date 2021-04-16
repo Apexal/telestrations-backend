@@ -3,6 +3,7 @@ const config = require('../config')
 const { validatePlayerDisplayName, generateRoomId, chooseRandomSecretWords } = require('../utils')
 const { GameRoomState } = require('./schema/GameRoomState')
 const { PlayerState } = require('./schema/PlayerState')
+const { RoundSubmissionState } = require('./schema/RoundSubmissionState')
 
 exports.GameRoom = class extends colyseus.Room {
   /**
@@ -39,6 +40,10 @@ exports.GameRoom = class extends colyseus.Room {
       console.log(`[Room ${this.roomId}] Client`, client.id, 'changed display name from', oldDisplayName, 'to', displayName)
     })
 
+    /**
+     * Handles request to start game from a client. Ensures they are the host before
+     * setting up the game to start.
+     */
     this.onMessage('start_game', (client) => {
       // Check if client is host
       if (client.id !== this.state.hostPlayerClientId) return
@@ -60,6 +65,32 @@ exports.GameRoom = class extends colyseus.Room {
 
       // Set the round to Round 1
       this.state.roundIndex = 1
+    })
+
+    /** Handles submission from clients. Must verify them before adding them to the state. */
+    this.onMessage('player_submit_submission', (client, { roundIndex, previousDrawingGuess, drawingStrokes }) => {
+      const newRoundSubmission = new RoundSubmissionState(client.sessionId, roundIndex, previousDrawingGuess, drawingStrokes)
+
+      // Check if player has already submitted for this round
+      if (!this.state.players[client.sessionId].submissions.find(sub => sub.roundIndex === roundIndex)) {
+        this.state.players[client.sessionId].submissions.push(newRoundSubmission)
+
+        console.log(
+          `[Room ${this.roomId}] Client`,
+          client.sessionId,
+          'made submission for round',
+          roundIndex,
+          `with previous drawing guess '${previousDrawingGuess}' and drawing with ${drawingStrokes.length} strokes`
+        )
+      } else {
+        console.log(
+          `[Room ${this.roomId}] Client`,
+          client.sessionId,
+          'attempted to make a double submission for round',
+          roundIndex,
+          'but was ignored'
+        )
+      }
     })
   }
 
