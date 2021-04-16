@@ -72,7 +72,7 @@ exports.GameRoom = class extends colyseus.Room {
     // TODO: implement reconnect waiting only if not consented
     if (this.state.players.has(client.sessionId)) {
       this.state.players.delete(client.sessionId)
-      if(client.id === this.state.hostPlayerClientId){
+      if (client.id === this.state.hostPlayerClientId) {
         const iter = this.state.players.keys()
         this.state.hostPlayerClientId = iter.next().value
       }
