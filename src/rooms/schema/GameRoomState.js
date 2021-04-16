@@ -20,6 +20,11 @@ class GameRoomState extends schema.Schema {
 
 schema.defineTypes(GameRoomState, {
   /**
+   * The maximum number of players allowed in
+   * a game room.
+   */
+  maxPlayers: 'uint8',
+  /**
    * The ordered list of players in the game room.
    * Imagine this as a cycle, so if you want the
    * next person after the last,
