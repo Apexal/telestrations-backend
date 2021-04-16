@@ -5,11 +5,23 @@ const { GameRoomState } = require('./schema/GameRoomState')
 const { PlayerState } = require('./schema/PlayerState')
 
 exports.GameRoom = class extends colyseus.Room {
+  /**
+   * Called when a new game room is created.
+   * Sets up the game room state and event
+   * handlers for everything that happens
+   * in the game.
+   *
+   * @param {*} options Options from the client
+   */
   onCreate (options) {
     this.setState(new GameRoomState())
 
+    // Set room ID to random alphabetic code like 'ABCDE'
     this.roomId = generateRoomId()
+
+    // Set the number of max clients
     this.maxClients = config.maxClients
+    this.state.maxPlayers = this.maxClients
 
     /**
      * Event handler for the `player_set_displayName` event.
