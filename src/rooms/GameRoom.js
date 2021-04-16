@@ -57,6 +57,9 @@ exports.GameRoom = class extends colyseus.Room {
         player.secretWord = secretWord
         console.log(`[Room ${this.roomId}] Client`, playerKeys[index], `(${player.displayName})`, 'received secret word', "'" + secretWord + "'")
       })
+
+      // Set the round to Round 1
+      this.state.roundIndex = 1
     })
   }
 
@@ -83,10 +86,14 @@ exports.GameRoom = class extends colyseus.Room {
   onLeave (client, consented) {
     // TODO: implement reconnect waiting only if not consented
     if (this.state.players.has(client.sessionId)) {
+      // Remove their player state
       this.state.players.delete(client.sessionId)
+
+      // Choose a new host if necessary
       if (client.id === this.state.hostPlayerClientId) {
         const iter = this.state.players.keys()
         this.state.hostPlayerClientId = iter.next().value
+        console.log(`[Room ${this.roomId}] Host leaving, chose client`, this.state.hostPlayerClientId, 'as new host')
       }
     }
     console.log(`[Room ${this.roomId}] Client`, client.id, 'left')
