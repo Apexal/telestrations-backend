@@ -1,4 +1,5 @@
 const schema = require('@colyseus/schema')
+const { generatePlayerName } = require('../../utils')
 const { RoundSubmissionState } = require('./RoundSubmissionState')
 
 /**
@@ -7,7 +8,7 @@ const { RoundSubmissionState } = require('./RoundSubmissionState')
 class PlayerState extends schema.Schema {
   constructor () {
     super()
-    this.displayName = 'Unnamed Player'
+    this.displayName = generatePlayerName()
     this.secretWord = ''
   }
 }
