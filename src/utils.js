@@ -2,7 +2,9 @@
  * Utility methods for the backend.
  */
 
-const dictionary = require('../dictionary.json')
+const nouns = require('../word-lists/nouns.json')
+const adjectives = require('../word-lists/adjectives.json')
+const dictionary = require('../word-lists/dictionary.json')
 const config = require('./config')
 
 /**
@@ -72,4 +74,11 @@ module.exports.generateRoomId = function generateRoomId () {
     roomId.push(characters[Math.floor(Math.random() * characters.length)])
   }
   return roomId.join('')
+}
+
+module.exports.generatePlayerName = function generatePlayerName () {
+  const adjective = adjectives[Math.floor(Math.random() * adjectives.length)]
+  const noun = nouns[Math.floor(Math.random() * nouns.length)]
+
+  return adjective.charAt(0).toUpperCase() + adjective.slice(1) + ' ' + noun.charAt(0).toUpperCase() + noun.slice(1)
 }
