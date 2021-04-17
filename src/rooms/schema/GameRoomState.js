@@ -1,4 +1,5 @@
 const schema = require('@colyseus/schema')
+const config = require('../../config')
 const MapSchema = schema.MapSchema
 const { PlayerState } = require('./PlayerState')
 
@@ -15,6 +16,9 @@ class GameRoomState extends schema.Schema {
 
     // Default round to 0 (waiting for players to join and start)
     this.roundIndex = 0
+
+    this.guessingSecondsRemaining = 0
+    this.drawingSecondsRemaining = config.drawingSeconds
   }
 }
 
@@ -46,7 +50,17 @@ schema.defineTypes(GameRoomState, {
    * The round the game is in. 0 means the game has not started and is waiting for players.
    * 1 is the first round. The last round is determined by the number of players.
    */
-  roundIndex: 'uint8'
+  roundIndex: 'uint8',
+  /**
+   * The number of seconds left for players to guess what the previous drawing
+   * they are shown is.
+   */
+  guessingSecondsRemaining: 'uint16',
+  /**
+   * The number of seconds left for players to draw their sketch for the
+   * current round.
+   */
+  drawingSecondsRemaining: 'uint16'
 })
 
 exports.GameRoomState = GameRoomState
