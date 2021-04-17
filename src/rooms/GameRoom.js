@@ -65,6 +65,9 @@ exports.GameRoom = class extends colyseus.Room {
 
       // Set the round to Round 1
       this.state.roundIndex = 1
+
+      // Lock room so no new clients
+      this.lock()
     })
 
     /** Handles submission from clients. Must verify them before adding them to the state. */
