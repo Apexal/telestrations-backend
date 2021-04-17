@@ -21,6 +21,17 @@ exports.GameRoom = class extends colyseus.Room {
     this.lock()
 
     this.clock.start()
+
+    this.delayedInterval = this.clock.setInterval(() => {
+      if (this.state.guessingSecondsRemaining > 0) {
+        this.state.guessingSecondsRemaining -= 1
+      } else if (this.state.drawingSecondsRemaining > 0) {
+        this.state.drawingSecondsRemaining -= 1
+      } else {
+        this.clock.clear()
+      }
+      console.log(`[Room ${this.roomId}] (guess/draw) ${this.state.guessingSecondsRemaining}s / ${this.state.drawingSecondsRemaining}s`)
+    }, 1000)
   }
 
   /**
