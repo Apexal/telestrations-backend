@@ -7,6 +7,22 @@ const { RoundSubmissionState } = require('./schema/RoundSubmissionState')
 
 exports.GameRoom = class extends colyseus.Room {
   /**
+   * Choose random words from the dictionary and assign them to
+   * every player in the game state.
+   */
+  assignRandomSecretWords () {
+    // Assign secret words
+    const playerKeys = Array.from(this.state.players.keys())
+    const secretWords = chooseRandomSecretWords(this.state.players.size)
+    secretWords.forEach((secretWord, index) => {
+      const player = this.state.players.get(playerKeys[index])
+
+      player.secretWord = secretWord
+      console.log(`[Room ${this.roomId}] Client`, playerKeys[index], `(${player.displayName})`, 'received secret word', "'" + secretWord + "'")
+    })
+  }
+
+  /**
    * Called when a new game room is created.
    * Sets up the game room state and event
    * handlers for everything that happens
@@ -54,20 +70,15 @@ exports.GameRoom = class extends colyseus.Room {
       console.log(`[Room ${this.roomId}] Host client ${client.id} wants to start game`)
 
       // Assign secret words
-      const playerKeys = Array.from(this.state.players.keys())
-      const secretWords = chooseRandomSecretWords(this.state.players.size)
-      secretWords.forEach((secretWord, index) => {
-        const player = this.state.players.get(playerKeys[index])
-
-        player.secretWord = secretWord
-        console.log(`[Room ${this.roomId}] Client`, playerKeys[index], `(${player.displayName})`, 'received secret word', "'" + secretWord + "'")
-      })
+      this.assignRandomSecretWords()
 
       // Set the round to Round 1
       this.state.roundIndex = 1
 
       // Lock room so no new clients
       this.lock()
+
+      this.clock.start()
     })
 
     /** Handles submission from clients. Must verify them before adding them to the state. */
