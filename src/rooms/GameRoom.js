@@ -87,8 +87,6 @@ exports.GameRoom = class extends colyseus.Room {
         'but was ignored'
       )
     }
-
-    // Check if all submissions have been received
   }
 
   /**
@@ -142,7 +140,21 @@ exports.GameRoom = class extends colyseus.Room {
     })
 
     /** Handles submission from clients. Must verify them before adding them to the state. */
-    this.onMessage('player_submit_submission', this.receiveSubmission.bind(this))
+    this.onMessage('player_submit_submission', (client, { roundIndex, previousDrawingGuess, drawingStrokes }) => {
+      this.receiveSubmission(client, { roundIndex, previousDrawingGuess, drawingStrokes })
+
+      // Check if all players are submitted
+      let allPlayersSubmitted = true
+      this.state.players.forEach((player, sessionId) => {
+        if (player.submissions.length !== roundIndex) allPlayersSubmitted = false
+      })
+
+      if (allPlayersSubmitted) {
+        console.log('all submitted')
+        this.clock.clear()
+        this.endRound()
+      }
+    })
   }
 
   /**
