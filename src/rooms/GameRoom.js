@@ -30,12 +30,22 @@ exports.GameRoom = class extends colyseus.Room {
       }
 
       if (this.state.drawingSecondsRemaining === 0) {
-        console.log('no more drawing')
-        this.clock.clear()
+        this.clock.clear() // Everyone better have submitted by now!
+        this.endRound()
       }
 
       console.log(`[Room ${this.roomId}] (guess/draw) ${this.state.guessingSecondsRemaining}s / ${this.state.drawingSecondsRemaining}s`)
     }, 1000)
+  }
+
+  endRound () {
+    this.broadcast('round-end', { roundIndex: this.state.roundIndex })
+
+    console.log(`[Room ${this.roomId}] Round over`)
+
+    // Reset timers but not clock
+    this.state.guessingSecondsRemaining = config.guessingSeconds
+    this.state.drawingSecondsRemaining = config.drawingSeconds
   }
 
   /**
@@ -52,6 +62,33 @@ exports.GameRoom = class extends colyseus.Room {
       player.secretWord = secretWord
       console.log(`[Room ${this.roomId}] Client`, playerKeys[index], `(${player.displayName})`, 'received secret word', "'" + secretWord + "'")
     })
+  }
+
+  receiveSubmission (client, { roundIndex, previousDrawingGuess, drawingStrokes }) {
+    const newRoundSubmission = new RoundSubmissionState(client.sessionId, roundIndex, previousDrawingGuess, drawingStrokes)
+
+    // Check if player has already submitted for this round
+    if (!this.state.players[client.sessionId].submissions.find(sub => sub.roundIndex === roundIndex)) {
+      this.state.players[client.sessionId].submissions.push(newRoundSubmission)
+
+      console.log(
+        `[Room ${this.roomId}] Client`,
+        client.sessionId,
+        'made submission for round',
+        roundIndex,
+        `with previous drawing guess '${previousDrawingGuess}' and drawing with ${drawingStrokes.length} strokes`
+      )
+    } else {
+      console.log(
+        `[Room ${this.roomId}] Client`,
+        client.sessionId,
+        'attempted to make a double submission for round',
+        roundIndex,
+        'but was ignored'
+      )
+    }
+
+    // Check if all submissions have been received
   }
 
   /**
@@ -105,30 +142,7 @@ exports.GameRoom = class extends colyseus.Room {
     })
 
     /** Handles submission from clients. Must verify them before adding them to the state. */
-    this.onMessage('player_submit_submission', (client, { roundIndex, previousDrawingGuess, drawingStrokes }) => {
-      const newRoundSubmission = new RoundSubmissionState(client.sessionId, roundIndex, previousDrawingGuess, drawingStrokes)
-
-      // Check if player has already submitted for this round
-      if (!this.state.players[client.sessionId].submissions.find(sub => sub.roundIndex === roundIndex)) {
-        this.state.players[client.sessionId].submissions.push(newRoundSubmission)
-
-        console.log(
-          `[Room ${this.roomId}] Client`,
-          client.sessionId,
-          'made submission for round',
-          roundIndex,
-          `with previous drawing guess '${previousDrawingGuess}' and drawing with ${drawingStrokes.length} strokes`
-        )
-      } else {
-        console.log(
-          `[Room ${this.roomId}] Client`,
-          client.sessionId,
-          'attempted to make a double submission for round',
-          roundIndex,
-          'but was ignored'
-        )
-      }
-    })
+    this.onMessage('player_submit_submission', this.receiveSubmission)
   }
 
   /**
