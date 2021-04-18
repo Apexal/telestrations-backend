@@ -3,8 +3,92 @@ const config = require('../config')
 const { validatePlayerDisplayName, generateRoomId, chooseRandomSecretWords } = require('../utils')
 const { GameRoomState } = require('./schema/GameRoomState')
 const { PlayerState } = require('./schema/PlayerState')
+const { RoundSubmissionState } = require('./schema/RoundSubmissionState')
 
 exports.GameRoom = class extends colyseus.Room {
+  /**
+   * Setup the game to start. Assign secret words,
+   * lock room, and start the clock.
+   */
+  startGame () {
+    // Assign secret words
+    this.assignRandomSecretWords()
+
+    // Set the round to Round 1
+    this.state.roundIndex = 1
+
+    // Lock room so no new clients
+    this.lock()
+
+    this.clock.start()
+
+    this.delayedInterval = this.clock.setInterval(() => {
+      if (this.state.guessingSecondsRemaining > 0) {
+        this.state.guessingSecondsRemaining -= 1
+      } else if (this.state.drawingSecondsRemaining > 0) {
+        this.state.drawingSecondsRemaining -= 1
+      }
+
+      if (this.state.drawingSecondsRemaining === 0) {
+        this.clock.clear() // Everyone better have submitted by now!
+        this.endRound()
+      }
+
+      console.log(`[Room ${this.roomId}] (guess/draw) ${this.state.guessingSecondsRemaining}s / ${this.state.drawingSecondsRemaining}s`)
+    }, 1000)
+  }
+
+  endRound () {
+    this.broadcast('round-end', { roundIndex: this.state.roundIndex })
+
+    console.log(`[Room ${this.roomId}] Round over`)
+
+    // Reset timers but not clock
+    this.state.guessingSecondsRemaining = config.guessingSeconds
+    this.state.drawingSecondsRemaining = config.drawingSeconds
+  }
+
+  /**
+   * Choose random words from the dictionary and assign them to
+   * every player in the game state.
+   */
+  assignRandomSecretWords () {
+    // Assign secret words
+    const playerKeys = Array.from(this.state.players.keys())
+    const secretWords = chooseRandomSecretWords(this.state.players.size)
+    secretWords.forEach((secretWord, index) => {
+      const player = this.state.players.get(playerKeys[index])
+
+      player.secretWord = secretWord
+      console.log(`[Room ${this.roomId}] Client`, playerKeys[index], `(${player.displayName})`, 'received secret word', "'" + secretWord + "'")
+    })
+  }
+
+  receiveSubmission (client, { roundIndex, previousDrawingGuess, drawingStrokes }) {
+    const newRoundSubmission = new RoundSubmissionState(client.sessionId, roundIndex, previousDrawingGuess, drawingStrokes)
+
+    // Check if player has already submitted for this round
+    if (!this.state.players[client.sessionId].submissions.find(sub => sub.roundIndex === roundIndex)) {
+      this.state.players[client.sessionId].submissions.push(newRoundSubmission)
+
+      console.log(
+        `[Room ${this.roomId}] Client`,
+        client.sessionId,
+        'made submission for round',
+        roundIndex,
+        `with previous drawing guess '${previousDrawingGuess}' and drawing with ${drawingStrokes.length} strokes`
+      )
+    } else {
+      console.log(
+        `[Room ${this.roomId}] Client`,
+        client.sessionId,
+        'attempted to make a double submission for round',
+        roundIndex,
+        'but was ignored'
+      )
+    }
+  }
+
   /**
    * Called when a new game room is created.
    * Sets up the game room state and event
@@ -39,6 +123,10 @@ exports.GameRoom = class extends colyseus.Room {
       console.log(`[Room ${this.roomId}] Client`, client.id, 'changed display name from', oldDisplayName, 'to', displayName)
     })
 
+    /**
+     * Handles request to start game from a client. Ensures they are the host before
+     * setting up the game to start.
+     */
     this.onMessage('start_game', (client) => {
       // Check if client is host
       if (client.id !== this.state.hostPlayerClientId) return
@@ -48,18 +136,24 @@ exports.GameRoom = class extends colyseus.Room {
 
       console.log(`[Room ${this.roomId}] Host client ${client.id} wants to start game`)
 
-      // Assign secret words
-      const playerKeys = Array.from(this.state.players.keys())
-      const secretWords = chooseRandomSecretWords(this.state.players.size)
-      secretWords.forEach((secretWord, index) => {
-        const player = this.state.players.get(playerKeys[index])
+      this.startGame()
+    })
 
-        player.secretWord = secretWord
-        console.log(`[Room ${this.roomId}] Client`, playerKeys[index], `(${player.displayName})`, 'received secret word', "'" + secretWord + "'")
+    /** Handles submission from clients. Must verify them before adding them to the state. */
+    this.onMessage('player_submit_submission', (client, { roundIndex, previousDrawingGuess, drawingStrokes }) => {
+      this.receiveSubmission(client, { roundIndex, previousDrawingGuess, drawingStrokes })
+
+      // Check if all players are submitted
+      let allPlayersSubmitted = true
+      this.state.players.forEach((player, sessionId) => {
+        if (player.submissions.length !== roundIndex) allPlayersSubmitted = false
       })
 
-      // Set the round to Round 1
-      this.state.roundIndex = 1
+      if (allPlayersSubmitted) {
+        console.log('all submitted')
+        this.clock.clear()
+        this.endRound()
+      }
     })
   }
 

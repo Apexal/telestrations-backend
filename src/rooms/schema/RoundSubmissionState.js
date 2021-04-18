@@ -8,17 +8,27 @@ const { StrokeState } = require('./StrokeState')
  * which is an attempt to draw what they guessed.
  */
 class RoundSubmissionState extends schema.Schema {
-  constructor () {
+  constructor (sessionId, roundIndex, guess, drawingStrokes) {
     super()
+    this.roundIndex = roundIndex
+    this.playerSessionId = sessionId
+    this.previousDrawingGuess = guess
     this.drawingStrokes = new schema.ArraySchema()
+    for (const strokeObj of drawingStrokes) {
+      this.drawingStrokes.push(new StrokeState(strokeObj))
+    }
   }
 }
 
 schema.defineTypes(RoundSubmissionState, {
   /**
+   * The round this submission is for. (0 being the lobby)
+   */
+  roundIndex: 'uint8',
+  /**
    * Unique client ID of the player who made this submission.
    */
-  playerClientId: 'string',
+  playerSessionId: 'string',
   /**
    * The player's guess of what the drawing they are shown from the previous round is.
    * Their drawing in this round is based on that guess.

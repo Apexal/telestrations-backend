@@ -7,7 +7,11 @@ module.exports = {
   /** The length of the randomly generated room ids. */
   roomIdLength: 5,
   /** The minimum number of players needed before a game can start. */
-  minClients: 3,
+  minClients: 1, // TODO: change in prod
   /** The maximum number of players a game can hold. */
-  maxClients: 12
+  maxClients: 12,
+  /** The number of seconds players get to guess what the previous drawing they are shown is */
+  guessingSeconds: 30,
+  /** The number of seconds players get to submit their drawings */
+  drawingSeconds: 10
 }

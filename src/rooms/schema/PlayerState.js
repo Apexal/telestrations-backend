@@ -10,6 +10,8 @@ class PlayerState extends schema.Schema {
     super()
     this.displayName = generatePlayerName()
     this.secretWord = ''
+    this.submissions = new schema.ArraySchema()
+    this.connected = true
   }
 }
 
@@ -26,7 +28,12 @@ schema.defineTypes(PlayerState, {
    * The player's submissions in an ordered array.
    * Each submissions stores their guess and their drawing.
    */
-  submissions: [RoundSubmissionState]
+  submissions: [RoundSubmissionState],
+  /**
+   * Whether the player is connected or not. Can be false if they
+   * dropped accidentally and we want to hold their spot for a while.
+   */
+  connected: 'boolean'
 })
 
 exports.PlayerState = PlayerState

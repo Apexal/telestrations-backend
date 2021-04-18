@@ -3,7 +3,18 @@ const schema = require('@colyseus/schema')
 /**
  * Represents a single stroke of a drawing.
  */
-class StrokeState extends schema.Schema {}
+class StrokeState extends schema.Schema {
+  constructor (strokeObject) {
+    super()
+
+    this.fromX = strokeObject.from.x
+    this.fromY = strokeObject.from.y
+    this.toX = strokeObject.to.x
+    this.toY = strokeObject.to.y
+    this.width = strokeObject.width
+    this.color = strokeObject.color
+  }
+}
 
 schema.defineTypes(StrokeState, {
   /** The x coordinate of the start of the stroke. */
