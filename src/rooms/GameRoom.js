@@ -142,7 +142,7 @@ exports.GameRoom = class extends colyseus.Room {
     })
 
     /** Handles submission from clients. Must verify them before adding them to the state. */
-    this.onMessage('player_submit_submission', this.receiveSubmission)
+    this.onMessage('player_submit_submission', this.receiveSubmission.bind(this))
   }
 
   /**
