@@ -17,8 +17,7 @@ class GameRoomState extends schema.Schema {
     // Default round to 0 (waiting for players to join and start)
     this.roundIndex = 0
 
-    this.guessingSecondsRemaining = 0
-    this.drawingSecondsRemaining = config.drawingSeconds
+    this.roundTimerSecondsRemaining = config.roundTimerSeconds
   }
 }
 
@@ -53,14 +52,9 @@ schema.defineTypes(GameRoomState, {
   roundIndex: 'uint8',
   /**
    * The number of seconds left for players to guess what the previous drawing
-   * they are shown is.
+   * they are shown is and then submit a drawing themselves.
    */
-  guessingSecondsRemaining: 'uint16',
-  /**
-   * The number of seconds left for players to draw their sketch for the
-   * current round.
-   */
-  drawingSecondsRemaining: 'uint16'
+  roundTimerSecondsRemaining: 'uint16'
 })
 
 exports.GameRoomState = GameRoomState

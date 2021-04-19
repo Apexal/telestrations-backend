@@ -23,18 +23,16 @@ exports.GameRoom = class extends colyseus.Room {
     this.clock.start()
 
     this.delayedInterval = this.clock.setInterval(() => {
-      if (this.state.guessingSecondsRemaining > 0) {
-        this.state.guessingSecondsRemaining -= 1
-      } else if (this.state.drawingSecondsRemaining > 0) {
-        this.state.drawingSecondsRemaining -= 1
+      if (this.state.roundTimerSecondsRemaining > 0) {
+        this.state.roundTimerSecondsRemaining -= 1
       }
 
-      if (this.state.drawingSecondsRemaining === 0) {
+      if (this.state.roundTimerSecondsRemaining === 0) {
         this.clock.clear() // Everyone better have submitted by now!
         this.endRound()
       }
 
-      console.log(`[Room ${this.roomId}] (guess/draw) ${this.state.guessingSecondsRemaining}s / ${this.state.drawingSecondsRemaining}s`)
+      console.log(`[Room ${this.roomId}] ${this.state.roundTimerSecondsRemaining}s remaining`)
     }, 1000)
   }
 
@@ -43,9 +41,8 @@ exports.GameRoom = class extends colyseus.Room {
 
     console.log(`[Room ${this.roomId}] Round over`)
 
-    // Reset timers but not clock
-    this.state.guessingSecondsRemaining = config.guessingSeconds
-    this.state.drawingSecondsRemaining = config.drawingSeconds
+    // Reset timer but not clock
+    this.state.roundTimerSecondsRemaining = config.roundTimerSeconds
   }
 
   /**

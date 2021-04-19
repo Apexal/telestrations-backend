@@ -10,8 +10,8 @@ module.exports = {
   minClients: 1, // TODO: change in prod
   /** The maximum number of players a game can hold. */
   maxClients: 12,
-  /** The number of seconds players get to guess what the previous drawing they are shown is */
-  guessingSeconds: 30,
-  /** The number of seconds players get to submit their drawings */
-  drawingSeconds: 10
+  /** The number of seconds players get to guess what
+   * the previous drawing they are shown is and to
+   * submit a drawing themselves. */
+  roundTimerSeconds: 90
 }
