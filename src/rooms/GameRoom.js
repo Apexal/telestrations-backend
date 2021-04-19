@@ -44,8 +44,6 @@ exports.GameRoom = class extends colyseus.Room {
         // Tell all clients to send submissions NOW even if users aren't done
         this.broadcast('send-submissions', { roundIndex: this.state.roundIndex })
       }
-
-      console.log(`[Room ${this.roomId}] ${this.state.roundTimerSecondsRemaining}s remaining`)
     }, 1000)
   }
 
