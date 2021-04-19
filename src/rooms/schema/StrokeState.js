@@ -7,10 +7,10 @@ class StrokeState extends schema.Schema {
   constructor (strokeObject) {
     super()
 
-    this.fromX = strokeObject.from.x
-    this.fromY = strokeObject.from.y
-    this.toX = strokeObject.to.x
-    this.toY = strokeObject.to.y
+    this.fromX = strokeObject.fromX
+    this.fromY = strokeObject.fromY
+    this.toX = strokeObject.toX
+    this.toY = strokeObject.toY
     this.width = strokeObject.width
     this.color = strokeObject.color
   }

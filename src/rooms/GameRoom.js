@@ -14,11 +14,22 @@ exports.GameRoom = class extends colyseus.Room {
     // Assign secret words
     this.assignRandomSecretWords()
 
-    // Set the round to Round 1
-    this.state.roundIndex = 1
-
     // Lock room so no new clients
     this.lock()
+
+    this.startNextRound()
+  }
+
+  endRound () {
+    this.broadcast('round-end', { roundIndex: this.state.roundIndex })
+    console.log(`[Room ${this.roomId}] Round over`)
+  }
+
+  startNextRound () {
+    this.state.roundIndex += 1
+
+    // Reset timer but not clock
+    this.state.roundTimerSecondsRemaining = config.roundTimerSeconds
 
     this.clock.start()
 
@@ -28,21 +39,12 @@ exports.GameRoom = class extends colyseus.Room {
       }
 
       if (this.state.roundTimerSecondsRemaining === 0) {
-        this.clock.clear() // Everyone better have submitted by now!
-        this.endRound()
+        this.clock.clear()
+
+        // Tell all clients to send submissions NOW even if users aren't done
+        this.broadcast('send-submissions', { roundIndex: this.state.roundIndex })
       }
-
-      console.log(`[Room ${this.roomId}] ${this.state.roundTimerSecondsRemaining}s remaining`)
     }, 1000)
-  }
-
-  endRound () {
-    this.broadcast('round-end', { roundIndex: this.state.roundIndex })
-
-    console.log(`[Room ${this.roomId}] Round over`)
-
-    // Reset timer but not clock
-    this.state.roundTimerSecondsRemaining = config.roundTimerSeconds
   }
 
   /**
@@ -150,6 +152,7 @@ exports.GameRoom = class extends colyseus.Room {
         console.log('all submitted')
         this.clock.clear()
         this.endRound()
+        this.startNextRound()
       }
     })
   }
@@ -181,7 +184,7 @@ exports.GameRoom = class extends colyseus.Room {
       this.state.players.delete(client.sessionId)
 
       // Choose a new host if necessary
-      if (client.id === this.state.hostPlayerClientId) {
+      if (client.id === this.state.hostPlayerClientId && this.state.size > 0) {
         const iter = this.state.players.keys()
         this.state.hostPlayerClientId = iter.next().value
         console.log(`[Room ${this.roomId}] Host leaving, chose client`, this.state.hostPlayerClientId, 'as new host')
