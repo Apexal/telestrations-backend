@@ -13,5 +13,5 @@ module.exports = {
   /** The number of seconds players get to guess what
    * the previous drawing they are shown is and to
    * submit a drawing themselves. */
-  roundTimerSeconds: 20
+  roundTimerSeconds: 9999
 }
