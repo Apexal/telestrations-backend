@@ -43,6 +43,7 @@ exports.GameRoom = class extends colyseus.Room {
 
         // Tell all clients to send submissions NOW even if users aren't done
         this.broadcast('send-submissions', { roundIndex: this.state.roundIndex })
+        console.log(`[Room ${this.roomId}] Demanding final submissions from all clients`)
       }
     }, 1000)
   }
@@ -149,7 +150,7 @@ exports.GameRoom = class extends colyseus.Room {
       })
 
       if (allPlayersSubmitted) {
-        console.log('all submitted')
+        console.log(`[Room ${this.roomId}] All clients submitted, ending round and continuing to next`)
         this.clock.clear()
         this.endRound()
         this.startNextRound()
