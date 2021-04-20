@@ -21,17 +21,22 @@ exports.GameRoom = class extends colyseus.Room {
   }
 
   endRound () {
+    this.clock.clear()
     this.broadcast('round-end', { roundIndex: this.state.roundIndex })
-    console.log(`[Room ${this.roomId}] Round over`)
+    console.log(`[Room ${this.roomId}] Round ${this.state.roundIndex} over`)
+    this.startNextRound()
   }
 
   startNextRound () {
     this.state.roundIndex += 1
+    console.log(`[Room ${this.roomId}] Starting round ${this.state.roundIndex}`)
 
     // Reset timer but not clock
     this.state.roundTimerSecondsRemaining = config.roundTimerSeconds
 
     this.clock.start()
+
+    // Make submissions for disconnected players
 
     this.delayedInterval = this.clock.setInterval(() => {
       if (this.state.roundTimerSecondsRemaining > 0) {
@@ -151,9 +156,7 @@ exports.GameRoom = class extends colyseus.Room {
 
       if (allPlayersSubmitted) {
         console.log(`[Room ${this.roomId}] All clients submitted, ending round and continuing to next`)
-        this.clock.clear()
         this.endRound()
-        this.startNextRound()
       }
     })
   }
@@ -165,8 +168,15 @@ exports.GameRoom = class extends colyseus.Room {
    * @param {*} options
    */
   onJoin (client, options) {
-    this.state.players.set(client.sessionId, new PlayerState())
-    console.log(`[Room ${this.roomId}] Client`, client.id, 'joined')
+    if (this.state.players.has(client.sessionId)) {
+      // Reconnected! Woo!
+      console.log(`[Room ${this.roomId}] Client`, client.id, 'rejoined')
+      this.state.players.get(client.sessionId).connected = true
+    } else {
+      // New connection
+      this.state.players.set(client.sessionId, new PlayerState())
+      console.log(`[Room ${this.roomId}] Client`, client.id, 'joined')
+    }
 
     // Set player as host if no host yet (player who created game becomes host)
     if (!this.state.hostPlayerClientId) this.state.hostPlayerClientId = client.id
@@ -193,6 +203,7 @@ exports.GameRoom = class extends colyseus.Room {
           console.log(`[Room ${this.roomId}] Host leaving, chose client`, this.state.hostPlayerClientId, 'as new host')
         }
       } else {
+        this.state.players.get(client.sessionId).connected = false
         console.log(`[Room ${this.roomId}] Client`, client.id, 'left mid-game, keeping player state')
       }
     }
