@@ -46,6 +46,17 @@ exports.GameRoom = class extends colyseus.Room {
       if (this.state.roundTimerSecondsRemaining === 0) {
         this.clock.clear()
 
+        // Make submissions for disconnected players
+        this.state.players.forEach((player, sessionId) => {
+          if (player.connected === false) {
+            if (!this.state.players[sessionId].submissions.find(sub => sub.roundIndex === this.state.roundIndex)) {
+              const newRoundSubmission = new RoundSubmissionState(sessionId, this.state.roundIndex, '', [])
+              this.state.players[sessionId].submissions.push(newRoundSubmission)
+              console.log(`[Room ${this.roomId}] Made empty submission for disconnected player ${sessionId}`)
+            }
+          }
+        })
+
         // Tell all clients to send submissions NOW even if users aren't done
         this.broadcast('send-submissions', { roundIndex: this.state.roundIndex })
         console.log(`[Room ${this.roomId}] Demanding final submissions from all clients`)
