@@ -181,17 +181,21 @@ exports.GameRoom = class extends colyseus.Room {
   onLeave (client, consented) {
     // TODO: implement reconnect waiting only if not consented
     if (this.state.players.has(client.sessionId)) {
-      // Remove their player state
-      this.state.players.delete(client.sessionId)
+      // Remove their player state IF GAME HASN'T STARTED YET
+      if (this.state.roundIndex === 0) {
+        this.state.players.delete(client.sessionId)
+        console.log(`[Room ${this.roomId}] Client`, client.id, 'left before start, deleting player state')
 
-      // Choose a new host if necessary
-      if (client.id === this.state.hostPlayerClientId && this.state.size > 0) {
-        const iter = this.state.players.keys()
-        this.state.hostPlayerClientId = iter.next().value
-        console.log(`[Room ${this.roomId}] Host leaving, chose client`, this.state.hostPlayerClientId, 'as new host')
+        // Choose a new host if necessary
+        if (client.id === this.state.hostPlayerClientId && this.state.players.size > 0) {
+          const iter = this.state.players.keys()
+          this.state.hostPlayerClientId = iter.next().value
+          console.log(`[Room ${this.roomId}] Host leaving, chose client`, this.state.hostPlayerClientId, 'as new host')
+        }
+      } else {
+        console.log(`[Room ${this.roomId}] Client`, client.id, 'left mid-game, keeping player state')
       }
     }
-    console.log(`[Room ${this.roomId}] Client`, client.id, 'left')
   }
 
   onDispose () {
