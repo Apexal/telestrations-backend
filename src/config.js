@@ -2,7 +2,7 @@ module.exports = {
   /** Rules for display names. */
   displayNames: {
     minLength: 3,
-    maxLength: 20
+    maxLength: 27
   },
   /** The length of the randomly generated room ids. */
   roomIdLength: 5,
@@ -13,5 +13,5 @@ module.exports = {
   /** The number of seconds players get to guess what
    * the previous drawing they are shown is and to
    * submit a drawing themselves. */
-  roundTimerSeconds: 120
+  roundTimerSeconds: 90
 }
