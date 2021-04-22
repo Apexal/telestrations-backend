@@ -1,4 +1,5 @@
 const colyseus = require('colyseus')
+const e = require('cors')
 const config = require('../config')
 const { validatePlayerDisplayName, generateRoomId, chooseRandomSecretWords } = require('../utils')
 const { GameRoomState } = require('./schema/GameRoomState')
@@ -24,7 +25,12 @@ exports.GameRoom = class extends colyseus.Room {
     this.clock.clear()
     this.broadcast('round-end', { roundIndex: this.state.roundIndex })
     console.log(`[Room ${this.roomId}] Round ${this.state.roundIndex} over`)
-    this.startNextRound()
+
+    if ((this.state.roundIndex === this.state.players.size && this.state.players.size % 2 === 0) || (this.state.roundIndex === this.state.players.size + 1 && this.state.players.size % 2 === 1)) {
+      this.endGame()
+    } else {
+      this.startNextRound()
+    }
   }
 
   startNextRound () {
@@ -62,6 +68,12 @@ exports.GameRoom = class extends colyseus.Room {
         console.log(`[Room ${this.roomId}] Demanding final submissions from all clients`)
       }
     }, 1000)
+  }
+
+  endGame () {
+    console.log(`[Room ${this.roomId}] Game over, end of flow`)
+    this.state.isGameOver = true
+    this.broadcast('game-over')
   }
 
   /**
