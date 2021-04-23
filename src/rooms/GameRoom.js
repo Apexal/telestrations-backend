@@ -226,8 +226,20 @@ exports.GameRoom = class extends colyseus.Room {
           console.log(`[Room ${this.roomId}] Host leaving, chose client`, this.state.hostPlayerClientId, 'as new host')
         }
       } else {
+        // PLAYER LEFT MID-GAME, ALLOW RECONNECTION
         this.state.players.get(client.sessionId).connected = false
-        console.log(`[Room ${this.roomId}] Client`, client.id, 'left mid-game, keeping player state')
+        console.log(`[Room ${this.roomId}] Client`, client.id, 'left mid-game, keeping player state and allow reconnection for 1 minute')
+
+        if (!consented) {
+          this.allowReconnection(client, 60)
+            .then(() => {
+              this.state.players.get(client.sessionId).connected = true
+              console.log(`[Room ${this.roomId}] Client`, client.id, 'rejoined mid-game')
+            })
+            .catch(err => {
+              console.log(`[Room ${this.roomId}] Client`, client.id, 'failed to reconnect after leaving:', err)
+            })
+        }
       }
     }
   }
