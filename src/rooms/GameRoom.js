@@ -63,7 +63,7 @@ exports.GameRoom = class extends colyseus.Room {
         this.state.players.forEach((player, sessionId) => {
           if (player.connected) return
 
-          if (!player.submissions.has(this.state.roundIndex)) {
+          if (!this.findPlayerSubmission(player, this.state.roundIndex)) {
             const newRoundSubmission = new RoundSubmissionState(sessionId, this.state.roundIndex, '', [])
             player.submissions.set(this.state.roundIndex, newRoundSubmission)
             console.log(`[Room ${this.roomId}] Made empty submission for disconnected player ${sessionId}`)
