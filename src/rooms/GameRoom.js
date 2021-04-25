@@ -31,7 +31,7 @@ exports.GameRoom = class extends colyseus.Room {
     this.broadcast('round-end', { roundIndex: this.state.roundIndex })
     console.log(`[Room ${this.roomId}] Round ${this.state.roundIndex} over`)
 
-    if ((this.state.roundIndex === this.state.players.size && this.state.players.size % 2 === 0) || (this.state.roundIndex === this.state.players.size + 1 && this.state.players.size % 2 === 1)) {
+    if (this.state.roundIndex === this.state.players.size + this.state.players.size % 2) {
       this.endGame()
     } else {
       this.startNextRound()
