@@ -61,12 +61,12 @@ exports.GameRoom = class extends colyseus.Room {
 
         // Make submissions for disconnected players
         this.state.players.forEach((player, sessionId) => {
-          if (player.connected === false) {
-            if (!this.state.players[sessionId].submissions.find(sub => sub.roundIndex === this.state.roundIndex)) {
-              const newRoundSubmission = new RoundSubmissionState(sessionId, this.state.roundIndex, '', [])
-              this.state.players[sessionId].submissions.push(newRoundSubmission)
-              console.log(`[Room ${this.roomId}] Made empty submission for disconnected player ${sessionId}`)
-            }
+          if (player.connected) return
+
+          if (!player.submissions.has(this.state.roundIndex)) {
+            const newRoundSubmission = new RoundSubmissionState(sessionId, this.state.roundIndex, '', [])
+            player.submissions.set(this.state.roundIndex, newRoundSubmission)
+            console.log(`[Room ${this.roomId}] Made empty submission for disconnected player ${sessionId}`)
           }
         })
 
@@ -117,6 +117,7 @@ exports.GameRoom = class extends colyseus.Room {
     if (!player.submissions.has(roundIndex)) {
       const newRoundSubmission = new RoundSubmissionState(client.sessionId, roundIndex, previousDrawingGuess, drawingStrokes)
 
+      // Store round submission
       player.submissions.set(roundIndex, newRoundSubmission)
 
       console.log(
@@ -149,6 +150,16 @@ exports.GameRoom = class extends colyseus.Room {
     player.displayName = newDisplayName
 
     console.log(`[Room ${this.roomId}] Client`, client.id, 'changed display name from', oldDisplayName, 'to', newDisplayName)
+  }
+
+  /**
+   * Check whether every player has submitted for a given round.
+   *
+   * @param {number} roundIndex
+   * @return {boolean}
+   */
+  haveAllPlayersSubmitted (roundIndex) {
+    return this.state.players.values().every(player => player.submissions.has(roundIndex))
   }
 
   /**
@@ -208,12 +219,7 @@ exports.GameRoom = class extends colyseus.Room {
       this.handleSubmission(client, roundIndex, previousDrawingGuess, drawingStrokes)
 
       // Check if all players are submitted
-      let allPlayersSubmitted = true
-      this.state.players.forEach((player, sessionId) => {
-        if (player.submissions.length !== roundIndex) allPlayersSubmitted = false
-      })
-
-      if (allPlayersSubmitted) {
+      if (this.haveAllPlayersSubmitted(roundIndex)) {
         console.log(`[Room ${this.roomId}] All clients submitted, ending round and continuing to next`)
         this.endRound()
       }
