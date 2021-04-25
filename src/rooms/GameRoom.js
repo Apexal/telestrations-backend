@@ -157,7 +157,7 @@ exports.GameRoom = class extends colyseus.Room {
      */
     this.onMessage('start_game', (client) => {
       // Check if client is host
-      if (client.id !== this.state.hostPlayerClientId) return
+      if (client.id !== this.state.hostPlayerSessionId) return
 
       // Check if min number of players
       if (this.state.players.size < config.minClients) return
@@ -202,7 +202,7 @@ exports.GameRoom = class extends colyseus.Room {
     }
 
     // Set player as host if no host yet (player who created game becomes host)
-    if (!this.state.hostPlayerClientId) this.state.hostPlayerClientId = client.id
+    if (!this.state.hostPlayerSessionId) this.state.hostPlayerSessionId = client.id
   }
 
   /**
@@ -220,10 +220,10 @@ exports.GameRoom = class extends colyseus.Room {
         console.log(`[Room ${this.roomId}] Client`, client.id, 'left before start, deleting player state')
 
         // Choose a new host if necessary
-        if (client.id === this.state.hostPlayerClientId && this.state.players.size > 0) {
+        if (client.id === this.state.hostPlayerSessionId && this.state.players.size > 0) {
           const iter = this.state.players.keys()
-          this.state.hostPlayerClientId = iter.next().value
-          console.log(`[Room ${this.roomId}] Host leaving, chose client`, this.state.hostPlayerClientId, 'as new host')
+          this.state.hostPlayerSessionId = iter.next().value
+          console.log(`[Room ${this.roomId}] Host leaving, chose client`, this.state.hostPlayerSessionId, 'as new host')
         }
       } else {
         // PLAYER LEFT MID-GAME, ALLOW RECONNECTION
