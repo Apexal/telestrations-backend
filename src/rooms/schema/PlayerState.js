@@ -1,4 +1,5 @@
 const schema = require('@colyseus/schema')
+const ArraySchema = schema.ArraySchema
 const { generatePlayerName } = require('../../utils')
 const { RoundSubmissionState } = require('./RoundSubmissionState')
 
@@ -10,7 +11,7 @@ class PlayerState extends schema.Schema {
     super()
     this.displayName = generatePlayerName()
     this.secretWord = ''
-    this.submissions = new schema.MapSchema()
+    this.submissions = new ArraySchema()
     this.connected = true
   }
 }
@@ -25,11 +26,10 @@ schema.defineTypes(PlayerState, {
    */
   secretWord: 'string',
   /**
-   * The player's submissions in a map.
+   * The player's submissions in an ordered array.
    * Each submissions stores their guess and their drawing.
-   * The key is the roundIndex and the value is the submission.
    */
-  submissions: { map: RoundSubmissionState },
+  submissions: [RoundSubmissionState],
   /**
    * Whether the player is connected or not. Can be false if they
    * dropped accidentally and we want to hold their spot for a while.

@@ -113,12 +113,13 @@ exports.GameRoom = class extends colyseus.Room {
    */
   handleSubmission (client, roundIndex, previousDrawingGuess, drawingStrokes) {
     const player = this.state.players.get(client.sessionId)
+
     // Check if player has already submitted for this round
-    if (!player.submissions.has(roundIndex)) {
+    if (!this.findPlayerSubmission(player, roundIndex)) {
       const newRoundSubmission = new RoundSubmissionState(client.sessionId, roundIndex, previousDrawingGuess, drawingStrokes)
 
       // Store round submission
-      player.submissions.set(roundIndex, newRoundSubmission)
+      player.submissions.push(newRoundSubmission)
 
       console.log(
         `[Room ${this.roomId}] Client`,
@@ -152,6 +153,10 @@ exports.GameRoom = class extends colyseus.Room {
     console.log(`[Room ${this.roomId}] Client`, client.id, 'changed display name from', oldDisplayName, 'to', newDisplayName)
   }
 
+  findPlayerSubmission (player, roundIndex) {
+    return player.submissions.find(sub => sub.roundIndex === roundIndex)
+  }
+
   /**
    * Check whether every player has submitted for a given round.
    *
@@ -159,7 +164,7 @@ exports.GameRoom = class extends colyseus.Room {
    * @return {boolean}
    */
   haveAllPlayersSubmitted (roundIndex) {
-    return this.state.players.values().every(player => player.submissions.has(roundIndex))
+    return [...this.state.players.values()].every(player => this.findPlayerSubmission(player, roundIndex))
   }
 
   /**
