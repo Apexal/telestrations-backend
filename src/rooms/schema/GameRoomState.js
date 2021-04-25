@@ -17,6 +17,8 @@ class GameRoomState extends schema.Schema {
     // Default round to 0 (waiting for players to join and start)
     this.roundIndex = 0
 
+    this.isGameOver = false
+
     this.roundTimerSecondsRemaining = config.roundTimerSeconds
   }
 }
@@ -54,7 +56,11 @@ schema.defineTypes(GameRoomState, {
    * The number of seconds left for players to guess what the previous drawing
    * they are shown is and then submit a drawing themselves.
    */
-  roundTimerSecondsRemaining: 'uint16'
+  roundTimerSecondsRemaining: 'uint16',
+  /**
+   * Whether or not the game is over.
+   */
+  isGameOver: 'boolean'
 })
 
 exports.GameRoomState = GameRoomState
