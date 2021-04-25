@@ -10,7 +10,7 @@ class PlayerState extends schema.Schema {
     super()
     this.displayName = generatePlayerName()
     this.secretWord = ''
-    this.submissions = new schema.ArraySchema()
+    this.submissions = new schema.MapSchema()
     this.connected = true
   }
 }
@@ -25,10 +25,11 @@ schema.defineTypes(PlayerState, {
    */
   secretWord: 'string',
   /**
-   * The player's submissions in an ordered array.
+   * The player's submissions in a map.
    * Each submissions stores their guess and their drawing.
+   * The key is the roundIndex and the value is the submission.
    */
-  submissions: [RoundSubmissionState],
+  submissions: { map: RoundSubmissionState },
   /**
    * Whether the player is connected or not. Can be false if they
    * dropped accidentally and we want to hold their spot for a while.
