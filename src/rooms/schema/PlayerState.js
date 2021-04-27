@@ -1,4 +1,5 @@
 const schema = require('@colyseus/schema')
+const ArraySchema = schema.ArraySchema
 const { generatePlayerName } = require('../../utils')
 const { RoundSubmissionState } = require('./RoundSubmissionState')
 
@@ -10,7 +11,7 @@ class PlayerState extends schema.Schema {
     super()
     this.displayName = generatePlayerName()
     this.secretWord = ''
-    this.submissions = new schema.ArraySchema()
+    this.submissions = new ArraySchema()
     this.connected = true
   }
 }

@@ -41,7 +41,7 @@ schema.defineTypes(GameRoomState, {
    * the game room. If they disconnect, this should
    * be reassigned to another client ID.
    */
-  hostPlayerClientId: 'string',
+  hostPlayerSessionId: 'string',
   /**
    * Should the room be publicly listed on the homepage?
    * If false, players can only join by entering the room code.

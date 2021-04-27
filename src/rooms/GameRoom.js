@@ -21,18 +21,27 @@ exports.GameRoom = class extends colyseus.Room {
     this.startNextRound()
   }
 
+  /**
+   * Ends the current round by clearing the clock, broadcasting
+   * a `round-end` message and deciding whether to end the game
+   * or start the next round.
+   */
   endRound () {
     this.clock.clear()
     this.broadcast('round-end', { roundIndex: this.state.roundIndex })
     console.log(`[Room ${this.roomId}] Round ${this.state.roundIndex} over`)
 
-    if ((this.state.roundIndex === this.state.players.size && this.state.players.size % 2 === 0) || (this.state.roundIndex === this.state.players.size + 1 && this.state.players.size % 2 === 1)) {
+    if (this.state.roundIndex === this.state.players.size + this.state.players.size % 2) {
       this.endGame()
     } else {
       this.startNextRound()
     }
   }
 
+  /**
+   * Start the next round by incrementing roundIndex,
+   * resetting timers, and starting the clock again.
+   */
   startNextRound () {
     this.state.roundIndex += 1
     console.log(`[Room ${this.roomId}] Starting round ${this.state.roundIndex}`)
@@ -41,8 +50,6 @@ exports.GameRoom = class extends colyseus.Room {
     this.state.roundTimerSecondsRemaining = config.roundTimerSeconds
 
     this.clock.start()
-
-    // Make submissions for disconnected players
 
     this.delayedInterval = this.clock.setInterval(() => {
       if (this.state.roundTimerSecondsRemaining > 0) {
@@ -54,12 +61,12 @@ exports.GameRoom = class extends colyseus.Room {
 
         // Make submissions for disconnected players
         this.state.players.forEach((player, sessionId) => {
-          if (player.connected === false) {
-            if (!this.state.players[sessionId].submissions.find(sub => sub.roundIndex === this.state.roundIndex)) {
-              const newRoundSubmission = new RoundSubmissionState(sessionId, this.state.roundIndex, '', [])
-              this.state.players[sessionId].submissions.push(newRoundSubmission)
-              console.log(`[Room ${this.roomId}] Made empty submission for disconnected player ${sessionId}`)
-            }
+          if (player.connected) return
+
+          if (!player.submissions.has(this.state.roundIndex)) {
+            const newRoundSubmission = new RoundSubmissionState(sessionId, this.state.roundIndex, '', [])
+            player.submissions.set(this.state.roundIndex, newRoundSubmission)
+            console.log(`[Room ${this.roomId}] Made empty submission for disconnected player ${sessionId}`)
           }
         })
 
@@ -70,6 +77,9 @@ exports.GameRoom = class extends colyseus.Room {
     }, 1000)
   }
 
+  /**
+   * Mark game as over by updating game state.
+   */
   endGame () {
     console.log(`[Room ${this.roomId}] Game over, end of flow`)
     this.state.isGameOver = true
@@ -92,12 +102,24 @@ exports.GameRoom = class extends colyseus.Room {
     })
   }
 
-  receiveSubmission (client, { roundIndex, previousDrawingGuess, drawingStrokes }) {
-    const newRoundSubmission = new RoundSubmissionState(client.sessionId, roundIndex, previousDrawingGuess, drawingStrokes)
+  /**
+   * Handle receiving a round submission from a client.
+   * Ignores repeated submissions and logs appropriately.
+   *
+   * @param {colyseus.Client} client 
+   * @param {number} roundIndex 
+   * @param {string} previousDrawingGuess
+   * @param {object[]} drawingStrokes 
+   */
+  handleSubmission (client, roundIndex, previousDrawingGuess, drawingStrokes) {
+    const player = this.state.players.get(client.sessionId)
 
     // Check if player has already submitted for this round
-    if (!this.state.players[client.sessionId].submissions.find(sub => sub.roundIndex === roundIndex)) {
-      this.state.players[client.sessionId].submissions.push(newRoundSubmission)
+    if (!this.findPlayerSubmission(player, roundIndex)) {
+      const newRoundSubmission = new RoundSubmissionState(client.sessionId, roundIndex, previousDrawingGuess, drawingStrokes)
+
+      // Store round submission
+      player.submissions.push(newRoundSubmission)
 
       console.log(
         `[Room ${this.roomId}] Client`,
@@ -115,6 +137,34 @@ exports.GameRoom = class extends colyseus.Room {
         'but was ignored'
       )
     }
+  }
+
+  /**
+   * Change a client's displayName and log it.
+   *
+   * @param {colyseus.Client} client
+   * @param {string} newDisplayName
+   **/
+  handleDisplayNameChange (client, newDisplayName) {
+    const player = this.state.players.get(client.id)
+    const oldDisplayName = player.displayName
+    player.displayName = newDisplayName
+
+    console.log(`[Room ${this.roomId}] Client`, client.id, 'changed display name from', oldDisplayName, 'to', newDisplayName)
+  }
+
+  findPlayerSubmission (player, roundIndex) {
+    return player.submissions.find(sub => sub.roundIndex === roundIndex)
+  }
+
+  /**
+   * Check whether every player has submitted for a given round.
+   *
+   * @param {number} roundIndex
+   * @return {boolean}
+   */
+  haveAllPlayersSubmitted (roundIndex) {
+    return [...this.state.players.values()].every(player => this.findPlayerSubmission(player, roundIndex))
   }
 
   /**
@@ -142,13 +192,12 @@ exports.GameRoom = class extends colyseus.Room {
     this.onMessage('player_set_displayName', (client, { displayName }) => {
       // Sanitize/validate display name
       const result = validatePlayerDisplayName(displayName)
-      if (!result) return // Ignore requests to set displayName to something invalid
+      if (!result) {
+        client.send('error', 'You can\'t use that name!')
+        return
+      } // Ignore requests to set displayName to something invalid
 
-      const player = this.state.players.get(client.id)
-      const oldDisplayName = player.displayName
-      player.displayName = result
-
-      console.log(`[Room ${this.roomId}] Client`, client.id, 'changed display name from', oldDisplayName, 'to', displayName)
+      this.handleDisplayNameChange(client, result)
     })
 
     /**
@@ -157,10 +206,13 @@ exports.GameRoom = class extends colyseus.Room {
      */
     this.onMessage('start_game', (client) => {
       // Check if client is host
-      if (client.id !== this.state.hostPlayerClientId) return
+      if (client.id !== this.state.hostPlayerSessionId) return
 
       // Check if min number of players
-      if (this.state.players.size < config.minClients) return
+      if (this.state.players.size < config.minClients) {
+        client.send('error', `Not enough players (${config.minClients} required)`)
+        return
+      }
 
       console.log(`[Room ${this.roomId}] Host client ${client.id} wants to start game`)
 
@@ -169,15 +221,10 @@ exports.GameRoom = class extends colyseus.Room {
 
     /** Handles submission from clients. Must verify them before adding them to the state. */
     this.onMessage('player_submit_submission', (client, { roundIndex, previousDrawingGuess, drawingStrokes }) => {
-      this.receiveSubmission(client, { roundIndex, previousDrawingGuess, drawingStrokes })
+      this.handleSubmission(client, roundIndex, previousDrawingGuess, drawingStrokes)
 
       // Check if all players are submitted
-      let allPlayersSubmitted = true
-      this.state.players.forEach((player, sessionId) => {
-        if (player.submissions.length !== roundIndex) allPlayersSubmitted = false
-      })
-
-      if (allPlayersSubmitted) {
+      if (this.haveAllPlayersSubmitted(roundIndex)) {
         console.log(`[Room ${this.roomId}] All clients submitted, ending round and continuing to next`)
         this.endRound()
       }
@@ -202,7 +249,7 @@ exports.GameRoom = class extends colyseus.Room {
     }
 
     // Set player as host if no host yet (player who created game becomes host)
-    if (!this.state.hostPlayerClientId) this.state.hostPlayerClientId = client.id
+    if (!this.state.hostPlayerSessionId) this.state.hostPlayerSessionId = client.id
   }
 
   /**
@@ -220,10 +267,10 @@ exports.GameRoom = class extends colyseus.Room {
         console.log(`[Room ${this.roomId}] Client`, client.id, 'left before start, deleting player state')
 
         // Choose a new host if necessary
-        if (client.id === this.state.hostPlayerClientId && this.state.players.size > 0) {
+        if (client.id === this.state.hostPlayerSessionId && this.state.players.size > 0) {
           const iter = this.state.players.keys()
-          this.state.hostPlayerClientId = iter.next().value
-          console.log(`[Room ${this.roomId}] Host leaving, chose client`, this.state.hostPlayerClientId, 'as new host')
+          this.state.hostPlayerSessionId = iter.next().value
+          console.log(`[Room ${this.roomId}] Host leaving, chose client`, this.state.hostPlayerSessionId, 'as new host')
         }
       } else {
         // PLAYER LEFT MID-GAME, ALLOW RECONNECTION
