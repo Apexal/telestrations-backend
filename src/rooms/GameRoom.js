@@ -63,7 +63,7 @@ exports.GameRoom = class extends colyseus.Room {
         this.state.players.forEach((player, sessionId) => {
           if (player.connected) return
 
-          if (!player.submissions.has(this.state.roundIndex)) {
+          if (!this.findPlayerSubmission(player, this.state.roundIndex)) {
             const newRoundSubmission = new RoundSubmissionState(sessionId, this.state.roundIndex, '', [])
             player.submissions.set(this.state.roundIndex, newRoundSubmission)
             console.log(`[Room ${this.roomId}] Made empty submission for disconnected player ${sessionId}`)
@@ -152,7 +152,19 @@ exports.GameRoom = class extends colyseus.Room {
 
     console.log(`[Room ${this.roomId}] Client`, client.id, 'changed display name from', oldDisplayName, 'to', newDisplayName)
   }
+/**
+   * Set the visibility of the game room in both state
+   * and metadata so the lobby page can filter private rooms.
+   *
+   * @param {boolean} isPublic
+   */
+ handleSetRoomVisibility (isPublic) {
+  this.state.isPublic = isPublic
 
+  this.setPrivate(!isPublic).then(() => colyseus.updateLobby(this))
+
+  console.log(`[Room ${this.roomId}] Host client`, this.state.hostPlayerSessionId, 'set room visibility to', isPublic ? 'public' : 'private')
+}
   findPlayerSubmission (player, roundIndex) {
     return player.submissions.find(sub => sub.roundIndex === roundIndex)
   }
@@ -200,6 +212,16 @@ exports.GameRoom = class extends colyseus.Room {
       this.handleDisplayNameChange(client, result)
     })
 
+    /**
+     * Event handler for the `set_room_visibility` event.
+     * Updates the room visibility. Only allows host to send this.
+     */
+     this.onMessage('set_room_visibility', (client, { isPublic }) => {
+      if (client.id !== this.state.hostPlayerSessionId) return
+
+      this.handleSetRoomVisibility(isPublic)
+    })
+    
     /**
      * Handles request to start game from a client. Ensures they are the host before
      * setting up the game to start.
