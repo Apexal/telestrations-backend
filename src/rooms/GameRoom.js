@@ -106,10 +106,10 @@ exports.GameRoom = class extends colyseus.Room {
    * Handle receiving a round submission from a client.
    * Ignores repeated submissions and logs appropriately.
    *
-   * @param {colyseus.Client} client 
-   * @param {number} roundIndex 
+   * @param {colyseus.Client} client
+   * @param {number} roundIndex
    * @param {string} previousDrawingGuess
-   * @param {object[]} drawingStrokes 
+   * @param {object[]} drawingStrokes
    */
   handleSubmission (client, roundIndex, previousDrawingGuess, drawingStrokes) {
     const player = this.state.players.get(client.sessionId)
@@ -152,19 +152,21 @@ exports.GameRoom = class extends colyseus.Room {
 
     console.log(`[Room ${this.roomId}] Client`, client.id, 'changed display name from', oldDisplayName, 'to', newDisplayName)
   }
-/**
+
+  /**
    * Set the visibility of the game room in both state
    * and metadata so the lobby page can filter private rooms.
    *
    * @param {boolean} isPublic
    */
- handleSetRoomVisibility (isPublic) {
-  this.state.isPublic = isPublic
+  handleSetRoomVisibility (isPublic) {
+    this.state.isPublic = isPublic
 
-  this.setPrivate(!isPublic).then(() => colyseus.updateLobby(this))
+    this.setPrivate(!isPublic).then(() => colyseus.updateLobby(this))
 
-  console.log(`[Room ${this.roomId}] Host client`, this.state.hostPlayerSessionId, 'set room visibility to', isPublic ? 'public' : 'private')
-}
+    console.log(`[Room ${this.roomId}] Host client`, this.state.hostPlayerSessionId, 'set room visibility to', isPublic ? 'public' : 'private')
+  }
+
   findPlayerSubmission (player, roundIndex) {
     return player.submissions.find(sub => sub.roundIndex === roundIndex)
   }
@@ -216,12 +218,12 @@ exports.GameRoom = class extends colyseus.Room {
      * Event handler for the `set_room_visibility` event.
      * Updates the room visibility. Only allows host to send this.
      */
-     this.onMessage('set_room_visibility', (client, { isPublic }) => {
+    this.onMessage('set_room_visibility', (client, { isPublic }) => {
       if (client.id !== this.state.hostPlayerSessionId) return
 
       this.handleSetRoomVisibility(isPublic)
     })
-    
+
     /**
      * Handles request to start game from a client. Ensures they are the host before
      * setting up the game to start.
